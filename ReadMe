@@ -1,0 +1,28 @@
+Team:
+
+Al Sifat Siddiki – Lead Developer & Integration
+Atif Azeem – Project Manager
+Zed Ukenye – Movement Control
+Hafiz Abd Ur Rehman – Audio Processing & QA
+Talha Ali – Computer Vision
+Jackson Dobbie – Android Support
+
+Overview:
+
+The system allows an Android device to control a Kobuki mobile robot through USB communication while supporting movement commands, audio interaction, and experimental computer vision features.
+
+Features:
+
+Android application for robot control
+Stable USB communication with Kobuki robot
+Manual movement controls (forward, backward, rotate, stop)
+Basic audio interaction
+Experimental computer vision
+Modular system integration
+
+Technologies:
+Android Studio
+Java / Kotlin
+OpenCV
+Kobuki Base Controller
+GitHub
