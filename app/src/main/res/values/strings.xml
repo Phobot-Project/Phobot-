@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PHOBOT Controller</string>
+    <string name="app_subtitle">Kobuki Robot USB Control</string>
+    <string name="status_disconnected">Status: Disconnected</string>
+    <string name="status_connected">Status: Connected</string>
+    <string name="no_device">No device detected</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="movement_title">Movement Controls</string>
+    <string name="forward">FORWARD</string>
+    <string name="backward">BACKWARD</string>
+    <string name="left">LEFT</string>
+    <string name="right">RIGHT</string>
+    <string name="stop">STOP</string>
+    <string name="voice_title">Voice Control</string>
+    <string name="voice_button">Start Voice Command</string>
+    <string name="voice_idle">Say a command: forward, backward, left, right, stop</string>
+    <string name="log_title">Event Log</string>
+</resources>
