@@ -3,7 +3,7 @@
 ## Test Environment
 - Flat surface, 2+ meters of clear space
 - Robot charged and powered on
-- Samsung A17 with app installed
+- Samsung A17 or Android 5.0 and above across Samsung, Pixel, Xiaomi, OnePlus, and similar Android phones with the app installed
 
 ## USB Tests
 
@@ -41,7 +41,8 @@
 
 ## Record
 
-- Phone: Samsung Galaxy A17 (Android 16)
+- Phone: Samsung Galaxy A17(Android 16), Samsung Galaxy A14(Android 15), Samsung S22 Ultra(Android 16)
 - Robot: Kobuki (Quanser/Yujin Robot)
+- showing: Robot movement and voice controller to the client of the Project
 - Date:29/04/2026
 - Tester: Atif, Sifat, Zed, Talha, & Hafiz
