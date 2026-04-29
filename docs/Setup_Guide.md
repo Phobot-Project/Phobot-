@@ -3,7 +3,7 @@
 ## What You Need
 
 For USB:
-- Samsung A17 (Type-C)
+- Samsung A17 (Type-C) or any Android 5.0 and above across Samsung, Pixel, Xiaomi, OnePlus, and similar Android phones.
 - USB cable (Type-C to Kobuki)
 - Kobuki powered on
 
@@ -20,10 +20,10 @@ For WiFi:
 ## Install the App
 
 1. Open project in Android Studio
-2. Connect Samsung A17 via USB to computer
+2. Connect Samsung A17 via USB to the computer
 3. Settings > About Phone > tap Build Number 7 times
 4. Developer Options > USB Debugging ON
-5. Select Samsung A17 in Android Studio device dropdown
+5. Select Samsung A17 in the Android Studio device dropdown
 6. Press Run
 
 ## USB Connection
