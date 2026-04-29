@@ -43,5 +43,5 @@
 
 - Phone: Samsung Galaxy A17 (Android 16)
 - Robot: Kobuki (Quanser/Yujin Robot)
-- Date: ______________________
-- Tester: ____________________
+- Date:29/04/2026
+- Tester: Atif, Sifat, Zed, Talha, & Hafiz
