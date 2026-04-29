@@ -26,7 +26,7 @@
 - [ ] Disconnect works
 
 ## WiFi Mode
-- [ ] ESP powered on, phone on same network
+- [ ] ESP powered on, phone on the same network
 - [ ] WiFi mode selected, IP and port entered
 - [ ] Connect pressed, status yellow
 - [ ] Movement commands work wirelessly
@@ -40,6 +40,4 @@
 ## Notes
 - Phone: Samsung A17 (Android 16)
 - Robot: Kobuki (Quanser/Yujin Robot)
-- Date: ____________________________
-- Tester: __________________________
-- Issues: __________________________
+- Tester: Atif, Sifat, Zed, Talha, Hafiz & Jackson.
