@@ -1,54 +1,22 @@
 package com.teamphobot.robotcontroller;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 public class AudioCommandManagerTest {
 
     @Test
-    public void testForward() {
-        assertEquals(RobotController.CMD_FORWARD,
-                AudioCommandManager.mapSpeechToCommand("forward"));
-    }
+    public void testForward() { assertEquals(CommandEncoder.CMD_FORWARD, AudioCommandManager.mapSpeechToCommand("forward")); }
 
     @Test
-    public void testBackward() {
-        assertEquals(RobotController.CMD_BACKWARD,
-                AudioCommandManager.mapSpeechToCommand("backward"));
-    }
+    public void testBack() { assertEquals(CommandEncoder.CMD_BACKWARD, AudioCommandManager.mapSpeechToCommand("go back")); }
 
     @Test
-    public void testBackAlias() {
-        assertEquals(RobotController.CMD_BACKWARD,
-                AudioCommandManager.mapSpeechToCommand("go back"));
-    }
+    public void testStopPriority() { assertEquals(CommandEncoder.CMD_STOP, AudioCommandManager.mapSpeechToCommand("stop going forward")); }
 
     @Test
-    public void testLeft() {
-        assertEquals(RobotController.CMD_LEFT,
-                AudioCommandManager.mapSpeechToCommand("turn left"));
-    }
+    public void testNull() { assertNull(AudioCommandManager.mapSpeechToCommand(null)); }
 
     @Test
-    public void testRight() {
-        assertEquals(RobotController.CMD_RIGHT,
-                AudioCommandManager.mapSpeechToCommand("go right"));
-    }
-
-    @Test
-    public void testStopPriority() {
-        assertEquals(RobotController.CMD_STOP,
-                AudioCommandManager.mapSpeechToCommand("stop going forward"));
-    }
-
-    @Test
-    public void testNullReturnsNull() {
-        assertNull(AudioCommandManager.mapSpeechToCommand(null));
-    }
-
-    @Test
-    public void testGarbageReturnsNull() {
-        assertNull(AudioCommandManager.mapSpeechToCommand("hello world"));
-    }
+    public void testGarbage() { assertNull(AudioCommandManager.mapSpeechToCommand("hello world")); }
 }

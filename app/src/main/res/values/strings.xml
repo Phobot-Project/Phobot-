@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PHOBOT Controller</string>
-    <string name="app_subtitle">Kobuki Robot USB Control</string>
+    <string name="app_subtitle">Kobuki Robot Control (USB / Bluetooth / WiFi)</string>
     <string name="status_disconnected">Status: Disconnected</string>
     <string name="status_connected">Status: Connected</string>
     <string name="no_device">No device detected</string>
@@ -17,4 +17,12 @@
     <string name="voice_button">Start Voice Command</string>
     <string name="voice_idle">Say a command: forward, backward, left, right, stop</string>
     <string name="log_title">Event Log</string>
+    <string name="connection_type_title">Connection Type</string>
+    <string name="mode_usb">USB</string>
+    <string name="mode_bluetooth">Bluetooth</string>
+    <string name="mode_wifi">WiFi</string>
+    <string name="bt_select_device">Select Bluetooth Device</string>
+    <string name="bt_no_device_selected">No Bluetooth device selected</string>
+    <string name="wifi_ip_hint">Robot IP address (e.g. 192.168.4.1)</string>
+    <string name="wifi_port_hint">Port (e.g. 8080)</string>
 </resources>

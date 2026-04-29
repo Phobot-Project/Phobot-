@@ -4,4 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="connected_bg">#CCFFCC</color>
     <color name="disconnected_bg">#FFCCCC</color>
+    <color name="bt_bg">#CCE5FF</color>
+    <color name="wifi_bg">#FFFFCC</color>
 </resources>

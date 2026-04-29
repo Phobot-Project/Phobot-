@@ -16,16 +16,109 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
-            android:textSize="24sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_subtitle"
-            android:textSize="14sp"
-            android:layout_marginBottom="16dp" />
+            android:textSize="12sp"
+            android:layout_marginBottom="10dp" />
+
+        <!-- CONNECTION TYPE SELECTOR -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/connection_type_title"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp" />
+
+        <RadioGroup
+            android:id="@+id/rgConnectionType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/rbUsb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_usb"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbBluetooth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_bluetooth"
+                android:layout_marginStart="12dp" />
+
+            <RadioButton
+                android:id="@+id/rbWifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mode_wifi"
+                android:layout_marginStart="12dp" />
+
+        </RadioGroup>
+
+        <!-- BLUETOOTH OPTIONS (hidden by default) -->
+        <LinearLayout
+            android:id="@+id/layoutBluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btnSelectBtDevice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/bt_select_device" />
+
+            <TextView
+                android:id="@+id/tvBtDeviceName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/bt_no_device_selected"
+                android:textSize="12sp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+        <!-- WIFI OPTIONS (hidden by default) -->
+        <LinearLayout
+            android:id="@+id/layoutWifi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/etWifiIp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/wifi_ip_hint"
+                android:inputType="text"
+                android:text="192.168.4.1"
+                android:textSize="14sp" />
+
+            <EditText
+                android:id="@+id/etWifiPort"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/wifi_port_hint"
+                android:inputType="number"
+                android:text="8080"
+                android:textSize="14sp" />
+
+        </LinearLayout>
 
         <!-- CONNECTION STATUS -->
         <TextView
@@ -33,10 +126,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/status_disconnected"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:padding="8dp"
+            android:padding="6dp"
             android:background="#FFCCCC" />
 
         <TextView
@@ -44,17 +137,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/no_device"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:gravity="center"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="6dp" />
 
-        <!-- CONNECTION BUTTONS -->
+        <!-- CONNECT / DISCONNECT -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="10dp">
 
             <Button
                 android:id="@+id/btnConnect"
@@ -81,13 +174,13 @@
             android:layout_height="wrap_content"
             android:text="@string/movement_title"
             android:textStyle="bold"
-            android:textSize="14sp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
 
         <Button
             android:id="@+id/btnForward"
-            android:layout_width="140dp"
-            android:layout_height="60dp"
+            android:layout_width="130dp"
+            android:layout_height="50dp"
             android:text="@string/forward"
             android:enabled="false" />
 
@@ -95,31 +188,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp">
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
 
             <Button
                 android:id="@+id/btnLeft"
-                android:layout_width="90dp"
-                android:layout_height="60dp"
+                android:layout_width="80dp"
+                android:layout_height="50dp"
                 android:text="@string/left"
                 android:enabled="false" />
 
             <Button
                 android:id="@+id/btnStop"
-                android:layout_width="90dp"
-                android:layout_height="60dp"
+                android:layout_width="80dp"
+                android:layout_height="50dp"
                 android:text="@string/stop"
                 android:backgroundTint="#FF4444"
                 android:textColor="#FFFFFF"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
                 android:enabled="false" />
 
             <Button
                 android:id="@+id/btnRight"
-                android:layout_width="90dp"
-                android:layout_height="60dp"
+                android:layout_width="80dp"
+                android:layout_height="50dp"
                 android:text="@string/right"
                 android:enabled="false" />
 
@@ -127,8 +220,8 @@
 
         <Button
             android:id="@+id/btnBackward"
-            android:layout_width="140dp"
-            android:layout_height="60dp"
+            android:layout_width="130dp"
+            android:layout_height="50dp"
             android:text="@string/backward"
             android:enabled="false" />
 
@@ -138,9 +231,9 @@
             android:layout_height="wrap_content"
             android:text="@string/voice_title"
             android:textStyle="bold"
-            android:textSize="14sp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="8dp" />
+            android:textSize="13sp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp" />
 
         <Button
             android:id="@+id/btnVoiceCommand"
@@ -154,7 +247,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/voice_idle"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:gravity="center" />
 
         <TextView
@@ -162,9 +255,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:gravity="center"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="10dp" />
 
         <!-- LAST ACTION / ERROR -->
         <TextView
@@ -172,7 +265,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:gravity="center" />
 
         <TextView
@@ -180,10 +273,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textColor="#CC0000"
             android:gravity="center"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="6dp" />
 
         <!-- EVENT LOG -->
         <TextView
@@ -191,20 +284,20 @@
             android:layout_height="wrap_content"
             android:text="@string/log_title"
             android:textStyle="bold"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:layout_marginBottom="4dp" />
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="100dp"
             android:background="#F0F0F0"
-            android:padding="8dp">
+            android:padding="6dp">
 
             <TextView
                 android:id="@+id/tvEventLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
+                android:textSize="10sp"
                 android:fontFamily="monospace"
                 android:text="" />
 

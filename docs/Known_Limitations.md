@@ -1,32 +1,23 @@
 # Known Limitations
 
-## FTDI-Specific
-This app initializes the FTDI FT232R chip with control transfers for 115200
-baud, 8N1. If the robot uses a different USB-serial chip (CH340, CP2102),
-the control transfer parameters may be different. The FTDI initialization
-code is in FtdiDevice.java.
+## USB
+- Connects to first serial device found (no device selection UI)
+- FTDI, CP2102, and CH340 chips supported. Other chips may not work.
 
-## One-Way Communication
-The app sends commands to the Kobuki but does not read sensor data back.
-There is no feedback confirming the robot received or executed a command.
+## Bluetooth
+- User must pair the HC-05/HC-06 from Android Settings before using the app
+- HC-05/HC-06 baud rate must be set to 115200 (AT+BAUD8)
+- Bluetooth range is typically 10 meters (depends on environment)
+- No auto-reconnect if Bluetooth disconnects
 
-## Fixed Speed
-Movement speed is fixed at 100 mm/s. There is no speed slider.
-To change the speed, edit the DEFAULT_SPEED value in KobukiPacket.java.
+## WiFi
+- User must know the ESP's IP address and port
+- Phone must be on the same WiFi network as the ESP (or ESP's AP network)
+- No auto-discovery of the ESP device
+- No encryption on the TCP connection
 
-## Single Device
-The app connects to the first FTDI device it finds. If multiple USB devices
-are attached, it may pick the wrong one.
-
-## Voice Recognition
-Requires internet on most phones (Google speech service).
-Accuracy varies with accent and background noise.
-Each voice command requires pressing the button (no continuous listening).
-
-## Emulator
-Will not work on an Android emulator. The emulator has no real USB port.
-Always test on the real Samsung A17 phone.
-
-## Tested Configuration Only
-Tested on: Samsung Galaxy A17, Android 16, USB Type-C, Kobuki (FTDI FT232R).
-Other phone/robot combinations are not guaranteed to work without changes.
+## General
+- Fixed speed: 200 mm/s forward, 100 mm/s turn (no speed slider)
+- One-way communication (sends commands, no sensor data back)
+- Kobuki watchdog stops robot in ~600ms if connection drops
+- Voice recognition needs internet on most phones

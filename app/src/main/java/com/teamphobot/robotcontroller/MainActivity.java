@@ -1,16 +1,24 @@
 package com.teamphobot.robotcontroller;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -18,41 +26,35 @@ import androidx.core.content.ContextCompat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
- * MainActivity is the single screen of the PHOBOT Controller app.
- *
- * Architecture flow:
- *
- *   Button press (e.g., FORWARD)
- *     -> RobotController.forward()
- *       -> KobukiPacket.forward()  (builds AA 55 06 01 04 64 00 00 00 checksum)
- *         -> FtdiDevice.send(packet)  (USB bulk transfer to Kobuki)
- *
- *   Voice button press
- *     -> Android speech recognizer
- *       -> AudioCommandManager.mapSpeechToCommand("forward")
- *         -> RobotController.forward()
- *           -> (same flow as above)
- *
- * The FtdiDevice class initializes the Kobuki's FTDI FT232R chip with
- * control transfers (115200 baud, 8N1) before any data is sent.
- * Without this initialization, bulk transfers fail with result -1.
+ * MainActivity is the app screen for PHOBOT Controller.
+ * Supports USB, Bluetooth, and WiFi connection modes.
+ * All modes send identical binary packets to the robot.
  */
 public class MainActivity extends AppCompatActivity
         implements ConnectionManager.ConnectionListener,
                    RobotController.CommandResultListener {
 
     private static final String TAG = "MainActivity";
-
     private static final int REQ_RECORD_AUDIO = 1001;
     private static final int REQ_SPEECH = 2001;
+    private static final int REQ_BT_PERMISSION = 3001;
 
     private ConnectionManager connectionManager;
     private RobotController robotController;
 
     // UI elements
+    private RadioGroup rgConnectionType;
+    private LinearLayout layoutBluetooth;
+    private LinearLayout layoutWifi;
+    private Button btnSelectBtDevice;
+    private TextView tvBtDeviceName;
+    private EditText etWifiIp;
+    private EditText etWifiPort;
+
     private TextView tvConnectionStatus;
     private TextView tvDeviceInfo;
     private TextView tvRecognizedSpeech;
@@ -79,7 +81,16 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Find UI elements
+        // Connection type selector
+        rgConnectionType = findViewById(R.id.rgConnectionType);
+        layoutBluetooth  = findViewById(R.id.layoutBluetooth);
+        layoutWifi       = findViewById(R.id.layoutWifi);
+        btnSelectBtDevice = findViewById(R.id.btnSelectBtDevice);
+        tvBtDeviceName    = findViewById(R.id.tvBtDeviceName);
+        etWifiIp   = findViewById(R.id.etWifiIp);
+        etWifiPort = findViewById(R.id.etWifiPort);
+
+        // Status and controls
         tvConnectionStatus = findViewById(R.id.tvConnectionStatus);
         tvDeviceInfo       = findViewById(R.id.tvDeviceInfo);
         tvRecognizedSpeech = findViewById(R.id.tvRecognizedSpeech);
@@ -97,7 +108,7 @@ public class MainActivity extends AppCompatActivity
         btnStop         = findViewById(R.id.btnStop);
         btnVoiceCommand = findViewById(R.id.btnVoiceCommand);
 
-        // Set up connection and robot controller
+        // Set up managers
         connectionManager = new ConnectionManager(this);
         connectionManager.setConnectionListener(this);
         connectionManager.registerReceiver();
@@ -105,17 +116,38 @@ public class MainActivity extends AppCompatActivity
         robotController = new RobotController(connectionManager);
         robotController.setCommandResultListener(this);
 
-        // Button handlers
-        btnConnect.setOnClickListener(v -> {
-            appendLog("Connecting...");
-            connectionManager.connect();
+        // Connection type radio buttons
+        rgConnectionType.setOnCheckedChangeListener((group, checkedId) -> {
+            layoutBluetooth.setVisibility(View.GONE);
+            layoutWifi.setVisibility(View.GONE);
+
+            if (checkedId == R.id.rbUsb) {
+                connectionManager.setMode(ConnectionManager.Mode.USB);
+                appendLog("Mode: USB");
+            } else if (checkedId == R.id.rbBluetooth) {
+                connectionManager.setMode(ConnectionManager.Mode.BLUETOOTH);
+                layoutBluetooth.setVisibility(View.VISIBLE);
+                appendLog("Mode: Bluetooth");
+            } else if (checkedId == R.id.rbWifi) {
+                connectionManager.setMode(ConnectionManager.Mode.WIFI);
+                layoutWifi.setVisibility(View.VISIBLE);
+                appendLog("Mode: WiFi");
+            }
         });
 
+        // Bluetooth device picker
+        btnSelectBtDevice.setOnClickListener(v -> showBluetoothDevicePicker());
+
+        // Connect / Disconnect
+        btnConnect.setOnClickListener(v -> handleConnect());
+
         btnDisconnect.setOnClickListener(v -> {
+            robotController.stop();
             appendLog("Disconnecting...");
             connectionManager.disconnect();
         });
 
+        // Movement buttons
         btnForward.setOnClickListener(v -> robotController.forward());
         btnBackward.setOnClickListener(v -> robotController.backward());
         btnLeft.setOnClickListener(v -> robotController.left());
@@ -123,47 +155,150 @@ public class MainActivity extends AppCompatActivity
         btnStop.setOnClickListener(v -> robotController.stop());
         btnVoiceCommand.setOnClickListener(v -> startVoiceRecognition());
 
-        // Start disconnected
         setUiDisconnected("Not connected yet");
-        appendLog("App started. Press Connect after attaching USB.");
+        appendLog("App started. Select connection mode and press Connect.");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Send stop command before closing to be safe
-        if (connectionManager.isConnected()) {
-            robotController.stop();
-        }
+        robotController.shutdown();
         connectionManager.unregisterReceiver();
         connectionManager.disconnect();
     }
 
     // =====================================================
-    // ConnectionManager.ConnectionListener callbacks
+    // Connect handler
+    // =====================================================
+
+    private void handleConnect() {
+        ConnectionManager.Mode mode = connectionManager.getMode();
+
+        switch (mode) {
+            case USB:
+                appendLog("Connecting via USB...");
+                connectionManager.connect();
+                break;
+
+            case BLUETOOTH:
+                if (!ensureBluetoothPermission()) return;
+                appendLog("Connecting via Bluetooth...");
+                connectionManager.connect();
+                break;
+
+            case WIFI:
+                String ip = etWifiIp.getText().toString().trim();
+                String portStr = etWifiPort.getText().toString().trim();
+                int port;
+                try {
+                    port = Integer.parseInt(portStr);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "Invalid port number", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                connectionManager.setWifiTarget(ip, port);
+                appendLog("Connecting via WiFi to " + ip + ":" + port + "...");
+                connectionManager.connect();
+                break;
+        }
+    }
+
+    // =====================================================
+    // Bluetooth device picker
+    // =====================================================
+
+    @SuppressLint("MissingPermission")
+    private void showBluetoothDevicePicker() {
+        if (!ensureBluetoothPermission()) return;
+
+        BluetoothHelper btHelper = connectionManager.getBluetoothHelper();
+
+        if (!btHelper.isBluetoothAvailable()) {
+            Toast.makeText(this, "Bluetooth is not available on this device", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (!btHelper.isBluetoothEnabled()) {
+            Toast.makeText(this, "Please turn on Bluetooth in Settings", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        List<BluetoothDevice> paired = btHelper.getPairedDevices();
+
+        if (paired.isEmpty()) {
+            Toast.makeText(this, "No paired Bluetooth devices. Pair the HC-05/HC-06 in Settings first.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String[] names = new String[paired.size()];
+        for (int i = 0; i < paired.size(); i++) {
+            BluetoothDevice d = paired.get(i);
+            try {
+                String name = d.getName();
+                names[i] = (name != null ? name : "Unknown") + "\n" + d.getAddress();
+            } catch (SecurityException e) {
+                names[i] = d.getAddress();
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Select Bluetooth Device")
+                .setItems(names, (dialog, which) -> {
+                    BluetoothDevice picked = paired.get(which);
+                    connectionManager.setBluetoothDevice(picked);
+                    try {
+                        String name = picked.getName();
+                        tvBtDeviceName.setText(name != null ? name : picked.getAddress());
+                    } catch (SecurityException e) {
+                        tvBtDeviceName.setText(picked.getAddress());
+                    }
+                    appendLog("BT device selected: " + tvBtDeviceName.getText());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private boolean ensureBluetoothPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{
+                                Manifest.permission.BLUETOOTH_CONNECT,
+                                Manifest.permission.BLUETOOTH_SCAN
+                        },
+                        REQ_BT_PERMISSION);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // =====================================================
+    // ConnectionManager.ConnectionListener
     // =====================================================
 
     @Override
-    public void onConnected(String deviceName, int vendorId, int productId) {
+    public void onConnected(String deviceInfo, ConnectionManager.Mode mode) {
         runOnUiThread(() -> {
-            tvConnectionStatus.setText("Status: Connected");
-            tvConnectionStatus.setBackgroundColor(
-                    ContextCompat.getColor(this, R.color.connected_bg));
-            tvDeviceInfo.setText(deviceName
-                    + " (VID=0x" + Integer.toHexString(vendorId)
-                    + " PID=0x" + Integer.toHexString(productId) + ")");
+            tvConnectionStatus.setText("Status: Connected (" + mode.name() + ")");
+
+            int bgColor;
+            switch (mode) {
+                case BLUETOOTH: bgColor = ContextCompat.getColor(this, R.color.bt_bg); break;
+                case WIFI:      bgColor = ContextCompat.getColor(this, R.color.wifi_bg); break;
+                default:        bgColor = ContextCompat.getColor(this, R.color.connected_bg); break;
+            }
+            tvConnectionStatus.setBackgroundColor(bgColor);
+            tvDeviceInfo.setText(deviceInfo);
             tvLastError.setText("");
 
-            setMovementButtonsEnabled(true);
+            setMovementEnabled(true);
             btnConnect.setEnabled(false);
             btnDisconnect.setEnabled(true);
             btnVoiceCommand.setEnabled(true);
 
-            appendLog("Connected: " + deviceName
-                    + " VID=0x" + Integer.toHexString(vendorId)
-                    + " PID=0x" + Integer.toHexString(productId));
-            appendLog("FTDI initialized: 115200 baud, 8N1");
-            appendLog("Kobuki ready. Send STOP first, then test movement.");
+            appendLog("Connected: " + deviceInfo);
         });
     }
 
@@ -182,15 +317,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     // =====================================================
-    // RobotController.CommandResultListener callbacks
+    // RobotController.CommandResultListener
     // =====================================================
 
     @Override
-    public void onCommandSent(String command, String hexData) {
+    public void onCommandSent(String command) {
         runOnUiThread(() -> {
             tvLastAction.setText("Sent: " + command);
             tvLastError.setText("");
-            appendLog("Sent " + command + " [" + hexData + "]");
+            appendLog("Sent: " + CommandEncoder.label(command));
         });
     }
 
@@ -199,7 +334,7 @@ public class MainActivity extends AppCompatActivity
         runOnUiThread(() -> {
             tvLastAction.setText("Failed: " + command);
             tvLastError.setText(reason);
-            appendLog("FAIL " + command + ": " + reason);
+            appendLog("FAIL: " + CommandEncoder.label(command) + " - " + reason);
         });
     }
 
@@ -211,8 +346,7 @@ public class MainActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    REQ_RECORD_AUDIO);
+                    new String[]{Manifest.permission.RECORD_AUDIO}, REQ_RECORD_AUDIO);
             return;
         }
 
@@ -226,7 +360,6 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(intent, REQ_SPEECH);
         } catch (ActivityNotFoundException e) {
             tvAudioStatus.setText("Speech recognition not available");
-            appendLog("Voice: not available on this device");
         }
     }
 
@@ -236,12 +369,19 @@ public class MainActivity extends AppCompatActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == REQ_RECORD_AUDIO) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startVoiceRecognition();
             } else {
                 tvAudioStatus.setText("Microphone permission denied");
-                appendLog("Voice: mic permission denied");
+            }
+        }
+
+        if (requestCode == REQ_BT_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                appendLog("Bluetooth permission granted");
+            } else {
+                appendLog("Bluetooth permission denied");
+                Toast.makeText(this, "Bluetooth permission denied", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -249,11 +389,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == REQ_SPEECH && resultCode == RESULT_OK && data != null) {
             ArrayList<String> results =
                     data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
             if (results != null && !results.isEmpty()) {
                 String spokenText = results.get(0).toLowerCase().trim();
                 tvRecognizedSpeech.setText("Heard: \"" + spokenText + "\"");
@@ -265,27 +403,21 @@ public class MainActivity extends AppCompatActivity
     private void handleVoiceCommand(String spokenText) {
         if (!connectionManager.isConnected()) {
             tvAudioStatus.setText("Robot is not connected");
-            appendLog("Voice: robot not connected");
             return;
         }
-
         String command = AudioCommandManager.mapSpeechToCommand(spokenText);
-
         if (command == null) {
             tvAudioStatus.setText("No valid command detected");
-            appendLog("Voice: no match for \"" + spokenText + "\"");
             return;
         }
-
         tvAudioStatus.setText("Matched: " + command);
-        appendLog("Voice: matched " + command);
-
+        appendLog("Voice: " + command);
         switch (command) {
-            case RobotController.CMD_FORWARD:  robotController.forward();  break;
-            case RobotController.CMD_BACKWARD: robotController.backward(); break;
-            case RobotController.CMD_LEFT:     robotController.left();     break;
-            case RobotController.CMD_RIGHT:    robotController.right();    break;
-            case RobotController.CMD_STOP:     robotController.stop();     break;
+            case CommandEncoder.CMD_FORWARD:  robotController.forward(); break;
+            case CommandEncoder.CMD_BACKWARD: robotController.backward(); break;
+            case CommandEncoder.CMD_LEFT:     robotController.left(); break;
+            case CommandEncoder.CMD_RIGHT:    robotController.right(); break;
+            case CommandEncoder.CMD_STOP:     robotController.stop(); break;
         }
     }
 
@@ -298,16 +430,14 @@ public class MainActivity extends AppCompatActivity
         tvConnectionStatus.setBackgroundColor(
                 ContextCompat.getColor(this, R.color.disconnected_bg));
         tvDeviceInfo.setText("No device detected");
-
-        setMovementButtonsEnabled(false);
+        setMovementEnabled(false);
         btnConnect.setEnabled(true);
         btnDisconnect.setEnabled(false);
         btnVoiceCommand.setEnabled(false);
-
         appendLog("Disconnected: " + reason);
     }
 
-    private void setMovementButtonsEnabled(boolean enabled) {
+    private void setMovementEnabled(boolean enabled) {
         btnForward.setEnabled(enabled);
         btnBackward.setEnabled(enabled);
         btnLeft.setEnabled(enabled);

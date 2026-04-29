@@ -2,7 +2,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-feature android:name="android.hardware.usb.host" />
+    <!-- USB Host mode -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+
+    <!-- Bluetooth (for wireless robot control via HC-05/HC-06 serial adapter) -->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
+    <!-- Android 11 and below -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <!-- Android 12+ -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <!-- WiFi / Network (for wireless robot control via ESP8266/ESP32 bridge) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Microphone for voice commands -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
@@ -27,10 +43,6 @@
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
-
-            <meta-data
-                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/usb_device_filter" />
 
         </activity>
     </application>

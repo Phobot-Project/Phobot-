@@ -2,57 +2,61 @@
 
 ## What You Need
 
-1. Samsung Galaxy A17 (Android 16, USB Type-C)
-2. USB OTG adapter (Type-C male to USB-A female)
-3. USB cable (USB-A to the Kobuki's USB port)
-4. Kobuki robot base, powered on
-5. Android Studio on your computer
+For USB:
+- Samsung A17 (Type-C)
+- USB cable (Type-C to Kobuki)
+- Kobuki powered on
+
+For Bluetooth:
+- HC-05 or HC-06 Bluetooth serial adapter
+- Jumper wires to connect adapter to Kobuki serial port
+- Pair the adapter from phone Settings > Bluetooth
+
+For WiFi:
+- ESP8266 or ESP32 module
+- Jumper wires to connect ESP to Kobuki serial port
+- TCP-to-serial bridge firmware on the ESP
 
 ## Install the App
 
-1. Open this project in Android Studio
-2. Connect the Samsung A17 to your computer via USB cable
-3. On the phone: Settings > About Phone > tap Build Number 7 times
-   (this enables Developer Options)
-4. On the phone: Settings > Developer Options > turn on USB Debugging
-5. Your phone will ask "Allow USB Debugging?" - tap Allow
-6. In Android Studio, click the device dropdown at the top
-7. Select your Samsung A17 (NOT "Pixel 5" or any emulator)
-8. Click the green Run button
-9. The app installs and opens on your phone
+1. Open project in Android Studio
+2. Connect Samsung A17 via USB to computer
+3. Settings > About Phone > tap Build Number 7 times
+4. Developer Options > USB Debugging ON
+5. Select Samsung A17 in Android Studio device dropdown
+6. Press Run
 
-## Connect the Robot
+## USB Connection
 
-1. Disconnect the phone from the computer
-2. Power on the Kobuki robot
-3. Plug the USB OTG adapter into your phone's Type-C port
-4. Connect the USB cable from the OTG adapter to the Kobuki's USB port
-5. Your phone will show: "Allow PHOBOT Controller to access USB device?"
-6. Tap Allow
-7. Open the app and press Connect
-8. The status bar should turn green
-9. The device info should show VID=0x403 PID=0x6001 (FTDI chip)
+1. Power on Kobuki
+2. Connect USB cable from Kobuki to phone Type-C port
+3. Tap Allow on the USB permission popup
+4. Open app, select USB mode, press Connect
+5. Status turns green
+
+## Bluetooth Connection
+
+1. Wire HC-05 to Kobuki: HC-05 TX -> Kobuki RX, HC-05 RX -> Kobuki TX, GND, VCC (3.3V or 5V)
+2. Configure HC-05 baud rate: AT+BAUD8 (for 115200)
+3. On phone: Settings > Bluetooth > Pair with HC-05 (default PIN: 1234)
+4. Open app, select Bluetooth mode
+5. Tap "Select Bluetooth Device" and pick HC-05
+6. Press Connect
+7. Status turns blue
+
+## WiFi Connection
+
+1. Wire ESP8266 to Kobuki: ESP TX -> Kobuki RX, ESP RX -> Kobuki TX, GND, VCC
+2. Flash ESP with TCP-serial bridge at 115200 baud
+3. Connect phone to ESP's WiFi network
+4. Open app, select WiFi mode
+5. Enter IP (default: 192.168.4.1) and port (e.g. 8080)
+6. Press Connect
+7. Status turns yellow
 
 ## Troubleshooting
 
-"No USB device found"
-- Check the OTG adapter is plugged in firmly
-- Check the robot is powered on
-- Try unplugging and replugging the cable
-- Try a different OTG adapter
-
-"Connection failed: FTDI initialization failed"
-- The robot's USB port may not be powered
-- Check the Kobuki's power switch is ON
-- Try disconnecting and reconnecting
-
-"Bulk transfer failed"
-- This should not happen with the new code (FTDI is initialized now)
-- If it still happens, the USB cable may be damaged
-- Try a different cable
-
-Buttons do nothing / robot does not move
-- Check the event log at the bottom of the app
-- Look for "Sent FORWARD [AA 55 ...]" messages
-- If packets are being sent but the robot does not move, the robot's
-  motor controller may need to be checked
+USB "No device found": Check cable, check OTG, check robot power
+USB "Bulk transfer failed": Should not happen (FTDI is initialized). Try different cable.
+BT "Connection failed": Check pairing, check HC-05 power, check baud rate config
+WiFi "Connection failed": Check IP, check port, check WiFi network, check ESP power
