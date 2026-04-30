@@ -38,7 +38,7 @@
 - [ ] "stop" recognized and executed
 
 ## Notes
-- Phone: Samsung A17 (Android 16)
+- Phone: Samsung Galaxy A17(Android 16), Samsung Galaxy A14(Android 15), Samsung S22 Ultra(Android 16)
 - Robot: Kobuki (Quanser/Yujin Robot)
 - Date: 11/03/2026
 - Tester: Atif, Sifat, Zed, Talha, Hafiz.
